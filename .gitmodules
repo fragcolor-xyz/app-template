@@ -1,0 +1,3 @@
+[submodule "chainblocks"]
+	path = chainblocks
+	url = https://github.com/fragcolor-xyz/chainblocks.git
