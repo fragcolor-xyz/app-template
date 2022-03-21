@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.18.1)
+cmake_minimum_required(VERSION 3.20.0)
+cmake_policy(SET CMP0114 NEW)
+
 project(frag-app)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

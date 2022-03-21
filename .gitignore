@@ -4,3 +4,4 @@ build*/
 .cache/
 imgui.ini
 *.log
+.DS_Store
