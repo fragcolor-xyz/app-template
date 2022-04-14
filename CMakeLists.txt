@@ -10,3 +10,4 @@ set(CHAINBLOCKS_ROOT chainblocks CACHE FILEPATH "Path to chainblocks project roo
 include(${CHAINBLOCKS_ROOT}/cmake/Root.cmake)
 
 add_subdirectory(fragments)
+add_subdirectory(remote)
