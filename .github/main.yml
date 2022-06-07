@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  Linux:
+    uses: ./.github/workflows/build-linux.yml
+    secrets: inherit
+    with:
+      build-type: Release
+  Windows:
+    uses: ./.github/workflows/build-windows.yml
+    secrets: inherit
+    with:
+      bitness: 64bits
+      build-type: Release
+      run-tests: true
+  iOS:
+    uses: ./.github/workflows/build-ios.yml
+    secrets: inherit
+  Android:
+    uses: ./.github/workflows/build-android.yml
+    secrets: inherit
