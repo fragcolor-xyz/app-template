@@ -58,7 +58,7 @@ jobs:
 
           # Point to the system cmake instalation
           # Gradle looks for bin/cmake(.exe) in this folder
-          echo "cmake.dir=/usr" >android/local.properties
+          echo "cmake.dir=$(dirname "$(which cmake)")/.." >android/local.properties
 
           which cmake
           cmake --version
