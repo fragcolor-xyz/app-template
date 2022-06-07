@@ -1,31 +1,59 @@
 name: Build (iOS)
 
-
 on:
   workflow_dispatch:
     inputs:
       build-type:
         description: Build in Release or Debug?
-        required: true
+        required: false
         default: Debug
         type: choice
         options:
           - Debug
           - Release
+      platform:
+        description: Target platform
+        required: false
+        default: iphoneos
+        type: choice
+        options:
+          - iphoneos
+          - iphonesimulator
+      architecture:
+        description: Target architecture
+        required: false
+        default: arm64
+        type: choice
+        options:
+          - arm64
+          - x86_64
   workflow_call:
     inputs:
       build-type:
-        required: true
+        required: false
         default: Debug
+        type: string
+      platform:
+        required: false
+        default: iphoneos
+        type: string
+      architecture:
+        required: false
+        default: arm64
         type: string
 
 jobs:
-  #
-  # Build shards for iOS
-  #
   iOS:
     runs-on: macos-latest
     steps:
+      - name: Setup
+        id: setup
+        shell: bash
+        run: |
+          echo "::set-output name=bitness::${{ github.event.inputs.bitness || inputs.bitness }}"
+          echo "::set-output name=build-type::${{ github.event.inputs.build-type || inputs.build-type }}"
+          echo "::set-output name=architecture::${{ github.event.inputs.architecture || inputs.architecture }}"
+          echo "::set-output name=platform::${{ github.event.inputs.platform || inputs.platform }}"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -40,11 +68,7 @@ jobs:
           rustup +nightly target add x86_64-apple-ios
       - uses: Swatinem/rust-cache@v1
         if: ${{ github.event_name != 'workflow_dispatch' }}
-      - name: Build device
+      - name: Build
         run: |
-          cmake -Bbuild_arm64 -GXcode -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_SYSTEM_PROCESSOR=arm64 -DXCODE_SDK=iphoneos
-          cmake --build build_arm64 --target app -- -arch arm64 -sdk iphoneos
-      - name: Build simulator x86
-        run: |
-          cmake -Bbuild_sim_x86 -GXcode -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DXCODE_SDK=iphonesimulator
-          cmake --build build_sim_x86 --target apps -- -arch x86_64 -sdk iphonesimulator
+          cmake -Bbuild -GXcode -DCMAKE_BUILD_TYPE=${{steps.setup.outputs.build-type}} -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_SYSTEM_PROCESSOR=${{steps.setup.outputs.architecture}} -DXCODE_SDK=${{steps.setup.outputs.platform}}
+          cmake --build build --target app -- -arch ${{steps.setup.outputs.architecture}} -sdk ${{steps.setup.outputs.platform}}
