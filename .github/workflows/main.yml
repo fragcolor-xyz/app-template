@@ -19,7 +19,6 @@ jobs:
     with:
       bitness: 64bits
       build-type: Release
-      run-tests: true
   iOS:
     uses: ./.github/workflows/build-ios.yml
     secrets: inherit
