@@ -1,0 +1,117 @@
+name: Build (Windows)
+
+on:
+  workflow_dispatch:
+    inputs:
+      bitness:
+        description: Build for 32-bit or 64-bit?
+        required: true
+        default: 64bits
+        type: choice
+        options:
+          - 32bits
+          - 64bits
+      build-type:
+        description: Build in Release or Debug?
+        required: true
+        default: Debug
+        type: choice
+        options:
+          - Debug
+          - Release
+  workflow_call:
+    inputs:
+      bitness:
+        required: true
+        default: 64bits
+        type: string
+      build-type:
+        required: true
+        default: Debug
+        type: string
+
+jobs:
+  Windows:
+    name: Build (${{ github.event.inputs.build-type || inputs.build-type }}, ${{ github.event.inputs.bitness || inputs.bitness }})
+    runs-on: windows-2019
+    steps:
+      - name: Setup
+        id: setup
+        shell: bash
+        run: |
+          echo "::set-output name=bitness::${{ github.event.inputs.bitness || inputs.bitness }}"
+          echo "::set-output name=build-type::${{ github.event.inputs.build-type || inputs.build-type }}"
+
+          if [ "${{ github.event.inputs.bitness || inputs.bitness }}" == "64bits" ]
+          then
+            echo "::set-output name=msystem::MINGW64"
+            echo "::set-output name=arch::x86_64"
+          else
+            echo "::set-output name=msystem::MINGW32"
+            echo "::set-output name=arch::i686"
+          fi
+
+          echo "::set-output name=build-target::app"
+
+          echo "::set-output name=artifact-path::build/app.exe"
+          echo "::set-output name=artifact::app-windows-${{ github.event.inputs.bitness || inputs.bitness }}-${{ github.event.inputs.build-type || inputs.build-type }}"
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up rust
+        env:
+          RUSTUP_USE_CURL: 1
+        run: |
+          rustup toolchain install nightly
+          rustup +nightly target add ${{ steps.setup.outputs.arch }}-pc-windows-gnu
+      - name: Set up rust (32-bits)
+        if: ${{ steps.setup.outputs.bitness == '32bits' }}
+        env:
+          RUSTUP_USE_CURL: 1
+        shell: bash
+        run: |
+          # Native libClang required for rust bindgen
+          # choco exit with code 1 after successful install
+          choco install -y --force llvm || exit 0
+          echo "LIBCLANG_PATH=C:\Program Files\LLVM\lib" >> $GITHUB_ENV
+      - uses: Swatinem/rust-cache@v1
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        with:
+          key: ${{ steps.setup.outputs.build-type }}
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ steps.setup.outputs.msystem }}
+          release: false
+          path-type: inherit
+          install: >-
+            base-devel
+            mingw-w64-${{ steps.setup.outputs.arch }}-toolchain
+            mingw-w64-${{ steps.setup.outputs.arch }}-cmake
+            mingw-w64-${{ steps.setup.outputs.arch }}-ninja
+            mingw-w64-${{ steps.setup.outputs.arch }}-clang
+            mingw-w64-${{ steps.setup.outputs.arch }}-lld
+            wget
+      - name: Build libtrace (64bits)
+        if: ${{ steps.setup.outputs.bitness == '64bits' }}
+        shell: msys2 {0}
+        run: |
+          cd deps/libbacktrace
+          mkdir build
+          ./configure --prefix=`pwd`/build
+          make && make install
+      - name: Build
+        env:
+          RUST_BACKTRACE: 1
+        shell: msys2 {0}
+        run: |
+          ./bootstrap
+          cmake -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=${{ steps.setup.outputs.build-type }} -DUSE_LIBBACKTRACE=${{ steps.setup.outputs.bitness == '64bits' }}
+          cmake --build build --target ${{ steps.setup.outputs.build-target }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.setup.outputs.artifact }} ${{ steps.setup.outputs.build-type }}
+          path: ${{ steps.setup.outputs.artifact-path }}
+          if-no-files-found: error
