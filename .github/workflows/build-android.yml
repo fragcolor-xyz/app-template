@@ -56,8 +56,9 @@ jobs:
           rustup toolchain install nightly
           rustup +nightly target add aarch64-linux-android
 
-          # Override CMake directory for gradle
-          echo "cmake.dir=$(which cmake)" >android/local.proprties
+          # Point to the system cmake instalation
+          # Gradle looks for bin/cmake(.exe) in this folder
+          echo "cmake.dir=/usr" >android/local.proprties
       - uses: Swatinem/rust-cache@v1
         if: ${{ github.event_name != 'workflow_dispatch' }}
         with:
