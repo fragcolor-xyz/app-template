@@ -58,7 +58,7 @@ jobs:
 
           # Point to the system cmake instalation
           # Gradle looks for bin/cmake(.exe) in this folder
-          echo "cmake.dir=/usr" >android/local.proprties
+          echo "cmake.dir=/usr" >android/local.properties
       - uses: Swatinem/rust-cache@v1
         if: ${{ github.event_name != 'workflow_dispatch' }}
         with:
