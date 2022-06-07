@@ -5,10 +5,10 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 32
     buildToolsVersion "30.0.3"
-    ndkVersion = "20.0.5594570"
+    ndkVersion = "23.2.8568313"
 
     defaultConfig {
-        applicationId "xyz.fragcolor.fragments"
+        applicationId "xyz.fragcolor.app"
         minSdkVersion 24
         targetSdkVersion 32
         versionCode 1
@@ -18,7 +18,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ''
-                targets += 'fragments'
+                targets += 'app'
             }
         }
     }
@@ -36,23 +36,14 @@ android {
         }
     }
 
-    // splits {
-    //     abi {
-    //         enable true
-    //         reset()
-    //         include ("arm64-v8a")
-    //     }
-    // }
-
     externalNativeBuild {
         cmake {
             path file('../../CMakeLists.txt')
-            version "3.18.6"
         }
     }
 
     sourceSets {
-        main.java.srcDirs += '../../chainblocks/deps/SDL/android-project/app/src/main/java'
+        main.java.srcDirs += '../../shards/deps/SDL/android-project/app/src/main/java'
     }
 }
 
