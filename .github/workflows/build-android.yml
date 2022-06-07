@@ -38,10 +38,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.12
-        with:
-          cmake-version: '3.20.0'
       - name: Setup SDK
         uses: android-actions/setup-android@v2
       - name: Setup NDK
