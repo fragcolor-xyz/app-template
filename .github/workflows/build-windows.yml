@@ -98,7 +98,7 @@ jobs:
           RUST_BACKTRACE: 1
         shell: msys2 {0}
         run: |
-          ./bootstrap
+          shards/bootstrap
           cmake -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=${{ steps.setup.outputs.build-type }}
           cmake --build build --target ${{ steps.setup.outputs.build-target }}
       - name: Upload artifacts
