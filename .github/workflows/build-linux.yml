@@ -43,6 +43,7 @@ jobs:
           sharedKey: Linux-${{ steps.setup.outputs.build-type }}
       - name: Build
         run: |
+          cmake --version
           cmake -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=${{ steps.setup.outputs.build-type }}
           cmake --build build --target app
       - name: Upload artifact
