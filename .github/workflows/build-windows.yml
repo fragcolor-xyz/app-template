@@ -93,21 +93,13 @@ jobs:
             mingw-w64-${{ steps.setup.outputs.arch }}-clang
             mingw-w64-${{ steps.setup.outputs.arch }}-lld
             wget
-      - name: Build libtrace (64bits)
-        if: ${{ steps.setup.outputs.bitness == '64bits' }}
-        shell: msys2 {0}
-        run: |
-          cd deps/libbacktrace
-          mkdir build
-          ./configure --prefix=`pwd`/build
-          make && make install
       - name: Build
         env:
           RUST_BACKTRACE: 1
         shell: msys2 {0}
         run: |
           ./bootstrap
-          cmake -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=${{ steps.setup.outputs.build-type }} -DUSE_LIBBACKTRACE=${{ steps.setup.outputs.bitness == '64bits' }}
+          cmake -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=${{ steps.setup.outputs.build-type }}
           cmake --build build --target ${{ steps.setup.outputs.build-target }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
