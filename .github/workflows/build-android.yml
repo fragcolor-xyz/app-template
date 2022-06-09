@@ -60,8 +60,8 @@ jobs:
           # Gradle looks for bin/cmake(.exe) in this folder
           echo "cmake.dir=$(dirname "$(which cmake)")/.." >android/local.properties
 
-          which cmake
-          cmake --version
+          # Make sure the NDK toolchain is in the path for rust to pick up
+          echo "$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin" >>$GITHUB_PATH
       - uses: Swatinem/rust-cache@v1
         if: ${{ github.event_name != 'workflow_dispatch' }}
         with:
