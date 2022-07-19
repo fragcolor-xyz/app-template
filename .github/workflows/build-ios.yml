@@ -71,4 +71,4 @@ jobs:
       - name: Build
         run: |
           cmake -Bbuild -GXcode -DCMAKE_BUILD_TYPE=${{steps.setup.outputs.build-type}} -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_SYSTEM_PROCESSOR=${{steps.setup.outputs.architecture}} -DXCODE_SDK=${{steps.setup.outputs.platform}}
-          cmake --build build --target app -- -arch ${{steps.setup.outputs.architecture}} -sdk ${{steps.setup.outputs.platform}} CODE_SIGNING_REQUIRED=NO
+          cmake --build build --target app -- -arch ${{steps.setup.outputs.architecture}} -sdk ${{steps.setup.outputs.platform}} CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
