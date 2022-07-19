@@ -1,0 +1,5 @@
+#!/bin/bash
+SCRIPT_PATH=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
+
+set -ex
+$SCRIPT_PATH/../../../android-debug-scripts/launch_code_debug xyz.fragcolor.fragments AppActivity

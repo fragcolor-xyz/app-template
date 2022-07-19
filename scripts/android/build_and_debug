@@ -1,0 +1,7 @@
+#!/bin/bash
+SCRIPT_PATH=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
+
+set -ex
+cmake --build $SCRIPT_PATH/../../build --target app
+$SCRIPT_PATH/install
+$SCRIPT_PATH/debug

@@ -1,0 +1,3 @@
+#!/bin/bash
+SCRIPT_PATH=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
+adb install -r ${SCRIPT_PATH}/../../build/app/app.apk
