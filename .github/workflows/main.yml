@@ -23,9 +23,9 @@ jobs:
     uses: ./.github/workflows/build-ios.yml
     secrets: inherit
     with:
-      build-type: Release
+      build-type: Debug
   Android:
     uses: ./.github/workflows/build-android.yml
     secrets: inherit
     with:
-      build-type: Release
+      build-type: Debug
