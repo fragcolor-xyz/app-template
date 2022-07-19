@@ -27,23 +27,23 @@ jobs:
         id: setup
         run: |
           echo "::set-output name=build-type::${{ github.event.inputs.build-type || inputs.build-type }}"
-          if [ "${{ github.event.inputs.build-type || inputs.build-type }}" == "Debug" ]
-          then
-            echo "::set-output name=apk-artifact::debug/app-debug.apk"
-          else
-            echo "::set-output name=apk-artifact::release/app-release-unsigned.apk"
-          fi
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '11'
       - name: Setup SDK
         uses: android-actions/setup-android@v2
-      - name: Setup NDK
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r23c
+      # - name: Setup NDK
+      #   uses: nttld/setup-ndk@v1
+      #   with:
+      #     ndk-version: r25
+      - name: "Setup SDK components"
+        run: |
+          sdkmanager --install "platforms;android-32"
+          sdkmanager --install "platform-tools"
+          sdkmanager --install "ndk;25.0.8775105"
+          sdkmanager --install "build-tools;33.0.0"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -51,34 +51,27 @@ jobs:
       - name: Set up dependencies
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install build-essential git cmake wget clang ninja-build xorg-dev libdbus-1-dev libssl-dev mesa-utils
+          sudo apt-get -y install build-essential git cmake wget clang ninja-build xorg-dev libdbus-1-dev mesa-utils p7zip-full
           shards/bootstrap
           rustup toolchain install nightly
           rustup +nightly target add aarch64-linux-android
 
-          # Point to the system cmake instalation
-          # Gradle looks for bin/cmake(.exe) in this folder
-          echo "cmake.dir=$(dirname "$(which cmake)")/.." >android/local.properties
+          # Export the NDK path
+          ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/25.0.8775105
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >>$GITHUB_ENV
 
           # Make sure the NDK toolchain is in the path for rust to pick up
           echo "$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin" >>$GITHUB_PATH
-      - uses: Swatinem/rust-cache@v1
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        with:
-          sharedKey: Linux-${{ steps.setup.outputs.build-type }}
       - name: Build
         run: |
-          cd android
-          chmod +x ./gradlew
-          ./gradlew --no-daemon assemble${{ steps.setup.outputs.build-type }}
-
-          cd ..
-          ls -R android/app/build/outputs
+          TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake
+          cmake -Bbuild -DCMAKE_BUILD_TYPE=${{steps.setup.outputs.build-type}} -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE -DANDROID_ABI="arm64-v8a" -DANDROID_TOOLS_VERSION="33.0.0" -DANDROID_PLATFORM="android-32"
+          cmake --build build --target app
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: app-android-arm64-${{ steps.setup.outputs.build-type }}
-          path: android/app/build/outputs/apk/${{ steps.setup.outputs.apk-artifact }}
+          path: build/app/app.apk
           if-no-files-found: error
       - name: Debugging with tmate
         uses: mxschmitt/action-tmate@v3.11
