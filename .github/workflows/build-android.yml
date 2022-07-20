@@ -73,6 +73,3 @@ jobs:
           name: app-android-arm64-${{ steps.setup.outputs.build-type }}
           path: build/app/app.apk
           if-no-files-found: error
-      - name: Debugging with tmate
-        uses: mxschmitt/action-tmate@v3.11
-        if: failure()

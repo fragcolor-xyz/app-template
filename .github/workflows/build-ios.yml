@@ -73,3 +73,9 @@ jobs:
         run: |
           cmake -Bbuild -GXcode -DCMAKE_BUILD_TYPE=${{steps.setup.outputs.build-type}} -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_SYSTEM_PROCESSOR=${{steps.setup.outputs.architecture}} -DXCODE_SDK=${{steps.setup.outputs.platform}}
           cmake --build build --target app -- -arch ${{steps.setup.outputs.architecture}} -sdk ${{steps.setup.outputs.platform}} CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-iOS-${{steps.setup.outputs.architecture}}-${{steps.setup.outputs.build-type}}
+          path: build/bin/app.app
+          if-no-files-found: error
