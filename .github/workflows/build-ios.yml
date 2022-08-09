@@ -50,7 +50,6 @@ jobs:
         id: setup
         shell: bash
         run: |
-          echo "::set-output name=bitness::${{ github.event.inputs.bitness || inputs.bitness }}"
           echo "::set-output name=build-type::${{ github.event.inputs.build-type || inputs.build-type }}"
           echo "::set-output name=architecture::${{ github.event.inputs.architecture || inputs.architecture }}"
           echo "::set-output name=platform::${{ github.event.inputs.platform || inputs.platform }}"
