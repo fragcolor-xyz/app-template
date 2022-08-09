@@ -29,3 +29,8 @@ jobs:
     secrets: inherit
     with:
       build-type: Debug
+  macOS:
+    uses: ./.github/workflows/build-macos.yml
+    secrets: inherit
+    with:
+      build-type: Debug

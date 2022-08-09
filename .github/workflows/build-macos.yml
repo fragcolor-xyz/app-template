@@ -1,0 +1,57 @@
+name: Build (macOS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build-type:
+        description: Build in Release or Debug?
+        required: true
+        default: Debug
+        type: choice
+        options:
+          - Debug
+          - Release
+  workflow_call:
+    inputs:
+      build-type:
+        required: true
+        default: Debug
+        type: string
+
+jobs:
+  macOS:
+    name: Build (${{ github.event.inputs.build-type || inputs.build-type }})
+    runs-on: macos-latest
+    outputs:
+      run-tests: ${{ steps.setup.outputs.run-tests }}
+    steps:
+      - name: Setup
+        id: setup
+        shell: bash
+        run: |
+          echo "::set-output name=build-type::${{ github.event.inputs.build-type || inputs.build-type }}"
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up dependencies
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app
+          brew install cmake ninja clang-format
+          shards/bootstrap
+          rustup toolchain install nightly
+          rustup default nightly
+      - uses: Swatinem/rust-cache@v1
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        with:
+          key: ${{ steps.setup.outputs.build-type }}
+      - name: Build
+        run: |
+          cmake -Bbuild -GNinja -DCMAKE_BUILD_TYPE=${{ steps.setup.outputs.build-type }}
+          cmake --build build --target app
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-macos-${{ steps.setup.outputs.build-type }}
+          path: build/bin/app.app
+          if-no-files-found: error
